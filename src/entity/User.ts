@@ -13,9 +13,6 @@ export class User extends BaseEntity {
     @Column("varchar", { length: 30 })
     lastName: string;
 
-    @Column()
-    age: number;
-
     @Column("varchar", { length: 200 })
     email: string;
 
