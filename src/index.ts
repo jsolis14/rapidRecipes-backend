@@ -24,7 +24,11 @@ import { resolvers } from './resolvers'
 
 // })
 
-const server = new GraphQLServer({ typeDefs: './src/schema.graphql', resolvers })
+const server = new GraphQLServer({ typeDefs: './src/schema.graphql', resolvers,
+context: ({request})=>{
+    console.log('here', request.headers.authorization)
+}
+})
 createConnection(config.database).then(()=>{
     server.start(()=> console.log("server is running on port 4000"))
 })
