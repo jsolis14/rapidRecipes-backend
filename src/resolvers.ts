@@ -3,6 +3,8 @@ import { User } from './entity/User';
 import * as yup from 'yup';
 import { validate } from 'uuid';
 import { formatYupError } from './utils/formatYupError';
+import {sign} from 'jsonwebtoken';
+import {Request, Response} from 'express';
 interface HelloQueryArgs {
     name: string
 }
@@ -14,8 +16,9 @@ interface RegisterMutationArgs{
     lastName: string;
 }
 
-interface LoginMutationArgs{
-
+interface myContext{
+    req: Request
+    res: Response
 }
 interface ResolverMap {
     [key: string]: {
@@ -28,11 +31,12 @@ export const resolvers: ResolverMap = {
         hello: (_: any, { name }: HelloQueryArgs) => `Bye ${name || "World"}`
     },
     Mutation: {
-        register: async (_:any, args:RegisterMutationArgs) => {
+        register: async (_:any, args:RegisterMutationArgs, req, res) => {
             //check if input is correct
+            console.log('from resolver', req)
             let userSchema = yup.object().shape({
                 firstName: yup.string().required().max(255),
-                email: yup.string().email(),
+                email: yup.string().email().required(),
                 lastName: yup.string().required().max(255),
                 password: yup.string().required().min(6).max(255),
               });
@@ -44,6 +48,7 @@ export const resolvers: ResolverMap = {
             }
 
             const {firstName, lastName, email, password} = args
+
 
             //check if the user exists
             const userExists = User.findOne({where: {email}, select: ["id"]})
@@ -59,7 +64,9 @@ export const resolvers: ResolverMap = {
                 password: hashedPassword
             })
             await user.save()
-            return null
+
+            res.cookie('rrrt', sign({userId: user.id}, 'somethingelse', {expiresIn: '7d'}), {httpOnly: true})
+            return {acessToken: sign({userId: user.id}, 'signature', {expiresIn: '60m'})}
         },
     }
 }
