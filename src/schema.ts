@@ -1,4 +1,4 @@
-import {ApolloServer, gql } from 'apollo-server';
+import { ApolloServer, gql } from 'apollo-server';
 
 export const typeDefs = gql(`
 type Query {
@@ -10,12 +10,32 @@ type Error {
   message: String!
 }
 
+type User{
+  id: String
+  firstName: String
+  lastName: String
+  email: String
+  password: String
+}
+
+type registerResponse{
+  user: User
+  error: [Error]
+}
+
+type LoginResponse{
+  error: [Error]
+  user: User
+  acessToken: String
+}
+
 type Mutation {
   register(
     email: String!
     password: String!
     firstName: String!
     lastName: String!
-  ): [Error!]
+  ): registerResponse
+  login(email: String!, password: String!): LoginResponse
 }
 `)
