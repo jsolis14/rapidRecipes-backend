@@ -3,8 +3,10 @@ import { User } from './entity/User';
 import * as yup from 'yup';
 import { validate } from 'uuid';
 import { formatYupError } from './utils/formatYupError';
+import { isAuth, createAccessToken, createRefreshToken } from './utils/auth';
 import { sign } from 'jsonwebtoken';
 import { Request, Response } from 'express';
+
 interface HelloQueryArgs {
     name: string
 }
@@ -35,16 +37,21 @@ interface myContext {
     res: Response
     req: Request
 }
+
 export const resolvers: ResolverMap = {
     Query: {
-        hello: (_: any, { name }: HelloQueryArgs) => `Bye ${name || "World"}`
+        hello: (_: any, { name }: HelloQueryArgs) => `Bye ${name || "World"}`,
+        testAccess: (_: any, __, context) => {
+            isAuth(context)
+
+            //@ts-ignore
+            return `the id is ${context.payload.userId}`
+        }
     },
     Mutation: {
-        register: async (_: any, args: RegisterMutationArgs, __, { req, res }) => {
-            //check if input is correct
-            console.log('req')
-            console.log('here')
+        register: async (_: any, args: RegisterMutationArgs) => {
 
+            //check if input is correct
             let userSchema = yup.object().shape({
                 firstName: yup.string().required().max(255),
                 email: yup.string().email().required(),
@@ -55,7 +62,6 @@ export const resolvers: ResolverMap = {
             try {
                 await userSchema.validate(args, { abortEarly: false })
             } catch (err) {
-                console.log(formatYupError(err))
                 return { user: null, error: formatYupError(err) }
             }
 
@@ -63,11 +69,11 @@ export const resolvers: ResolverMap = {
 
 
             //check if the user exists
-            console.log('before userExists')
+
             const userExists = await User.findOne({ where: { email }, select: ["id"] })
             console.log(userExists)
             if (userExists) {
-                console.log('user exists')
+
                 return { user: null, error: [{ path: 'email', message: 'Looks like this eamil is arleady associated with an account' }] }
             }
 
@@ -85,8 +91,8 @@ export const resolvers: ResolverMap = {
         },
         login: async (_: any, { email, password }: LoginMutationArgs, context) => {
 
-            const user = await User.findOne({ where: { email } })
-            console.log('here')
+            const user: User | undefined = await User.findOne({ where: { email } })
+
             if (!user) {
                 return {
                     user: null, error: [{ path: 'email', message: 'Email or password is wrong' }]
@@ -98,15 +104,12 @@ export const resolvers: ResolverMap = {
                 return { user: null, error: [{ path: 'email', message: 'Email or password is wrong' }] }
             }
 
-            //@ts-ignore
-            console.log(context.req)
-
             // create refresh token
             //@ts-ignore
-            context.res.cookie('rrrt', sign({ userId: user.id }, 'somethingelse', { expiresIn: '7d' }), { httpOnly: true })
+            context.res.cookie('rrrt', createRefreshToken(user), { httpOnly: true })
 
             //create acess token
-            return { acessToken: sign({ userId: user.id }, 'signature', { expiresIn: '60m' }), user, error: null }
+            return { acessToken: createAccessToken(user), user, error: null }
         }
     }
 }

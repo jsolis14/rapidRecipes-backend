@@ -3,6 +3,7 @@ import { ApolloServer, gql } from 'apollo-server';
 export const typeDefs = gql(`
 type Query {
   hello(name: String): String!
+  testAccess(name: String): String
 }
 
 type Error {
@@ -37,5 +38,6 @@ type Mutation {
     lastName: String!
   ): registerResponse
   login(email: String!, password: String!): LoginResponse
+
 }
 `)
