@@ -1,4 +1,4 @@
-import { ApolloServer, gql } from 'apollo-server';
+import { gql } from 'apollo-server-express';
 
 export const typeDefs = gql(`
 type Query {
@@ -21,11 +21,11 @@ type User{
 
 type registerResponse{
   user: User
-  error: [Error]
+  errors: [Error]
 }
 
 type LoginResponse{
-  error: [Error]
+  errors: [Error]
   user: User
   acessToken: String
 }
