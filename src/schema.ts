@@ -41,3 +41,4 @@ type Mutation {
 
 }
 `)
+console.log(typeDefs)

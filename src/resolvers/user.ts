@@ -2,7 +2,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from '../entity/User';
 import * as yup from 'yup';
 import { formatYupError } from '../utils/formatYupError';
-import { isAuth, createAccessToken, createRefreshToken } from '../utils/auth';
+import { isAuth, createAccessToken, createRefreshToken, sendRefreshToken } from '../utils/auth';
 import { Request, Response } from 'express';
 
 interface HelloQueryArgs {
@@ -103,7 +103,7 @@ export const userAuthResolvers: ResolverMap = {
 
             // create refresh token
             //@ts-ignore
-            context.res.cookie('rrrt', createRefreshToken(user), { httpOnly: true })
+            sendRefreshToken(context.res, createRefreshToken(user))
 
             //create acess token
             return { acessToken: createAccessToken(user), user }
