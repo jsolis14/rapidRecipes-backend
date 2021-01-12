@@ -10,11 +10,15 @@ import { verify } from "jsonwebtoken";
 import { User } from "./entity/User";
 import { createAccessToken, createRefreshToken, sendRefreshToken } from "./utils/auth";
 import cors from 'cors';
+
 const app = express();
 app.use(cors({
     origin: 'http://localhost:3000',
-    credentials: true
+    credentials: true,
 }))
+
+
+
 app.use(cookieParser())
 
 app.post("/refresh_token", async (req, res) => {
@@ -53,6 +57,7 @@ const server = new ApolloServer({
         return { res, req }
     }
 })
+
 
 server.applyMiddleware({ app, cors: false })
 app.listen({ port: 4000 }, () => {

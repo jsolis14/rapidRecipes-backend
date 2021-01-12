@@ -3,7 +3,7 @@ import { sign, verify } from 'jsonwebtoken'
 import { Response } from 'express'
 
 export function createAccessToken(user: User) {
-    return sign({ userId: user.id }, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: '60m' })
+    return sign({ userId: user.id }, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: '15s' })
 }
 
 export function createRefreshToken(user: User) {
@@ -30,6 +30,7 @@ export function isAuth(context: any): void {
 }
 
 export function sendRefreshToken(res: Response, token: String): void {
+    console.log('cookie was sent')
     res.cookie('rrrt', token, { httpOnly: true })
 }
 
@@ -41,6 +42,4 @@ export async function revokeRefreshtoken(userId: number) {
         await user.save()
         return true
     }
-
-
 }
