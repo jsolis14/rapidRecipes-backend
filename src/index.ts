@@ -9,8 +9,12 @@ import cookieParser from 'cookie-parser'
 import { verify } from "jsonwebtoken";
 import { User } from "./entity/User";
 import { createAccessToken, createRefreshToken, sendRefreshToken } from "./utils/auth";
-
+import cors from 'cors';
 const app = express();
+app.use(cors({
+    origin: 'http://localhost:3000',
+    credentials: true
+}))
 app.use(cookieParser())
 
 app.post("/refresh_token", async (req, res) => {
@@ -50,7 +54,7 @@ const server = new ApolloServer({
     }
 })
 
-server.applyMiddleware({ app })
+server.applyMiddleware({ app, cors: false })
 app.listen({ port: 4000 }, () => {
     createConnection(config.database).then(async () => {
         console.log(`🚀 Server ready at local host 4000`);
